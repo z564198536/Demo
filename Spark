@@ -1,0 +1,23 @@
+import org.apache.log4j.{Level, Logger}
+import org.apache.spark._
+import org.apache.spark.streaming._
+import org.apache.spark.streaming.StreamingContext._
+object Demo extends App {
+  //log off
+  Logger.getLogger("org.apache.spark").setLevel(Level.ERROR)
+  //get SparkConf
+  val sparkConf = new SparkConf().setMaster("local[2]").setAppName("WordCount")
+  //get StreamingContext: ssc
+  val ssc = new StreamingContext(sparkConf,Seconds(5))
+  //real-time data reception
+  val lines = ssc.textFileStream("D:\\IdeaWorkSpace\\SparkStreaming\\data")
+  //data processing
+  val words = lines.flatMap(_.split(" "))
+  val wordCounts = words.map(x=>(x,1)).reduceByKey(_+_)
+  //print the messages
+  wordCounts.print()
+  //start streamingContext
+  ssc.start()
+  //waiting for calculation
+  ssc.awaitTermination()
+}
